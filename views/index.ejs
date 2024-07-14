@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles/main.css">
+    <title>Homepage</title>
+    <script>
+        
+    </script>
+</head>
+<body>
+
+    <div class="row-container">
+        <div id="logo"><div><img src=""></div></div>
+        <div>
+            <label class="switch">
+            <input type="checkbox">
+            <span class="slider round"></span>
+            </label>
+        </div>
+        <div>
+            <button id="make-post">Create New Post</button>
+        </div>
+    </div>
+    <hr>
+
+    <div class="row-body-container">
+        <div class="side-column">
+            <div id="explanation">
+                <h2 class="title">How To Use.</h2>
+                <p class="text">Enter a title, blog post text, and click submit. Your post will be displayed on the interface with most recent
+                    posts at the top of the list. Share with your friends and display messages on the board for everyone to see!
+                </p>
+            </div>
+        </div>
+        <div class="middle-column">
+                <form id="myForm" class="post" action="/submit-form" method="POST">
+                    <input id="formTitle" type="text" name="postTitle" placeholder="Enter Title" required>
+                    <textarea id="formText" type="text" name="postText" rows="4" cols="50" placeholder="Enter Text" required></textarea>
+                    <button type="submit">Submit</button>
+                  </form>
+            
+
+            <%if(locals.posts) { %>
+                <% if(posts.length > 0){ %>
+                    <% for(var i = posts.length - 1; i >=0; --i){ %>
+                        <div class="post" id="post-content-<%= posts[i].id %>">
+                            <h2 class="title"><%= posts[i].title %></h2>
+                            <p class="text"><%= posts[i].text %></p>
+                            <div class="post-flex-container">
+                                <button class="delete" data-id="<%= posts[i].id %>">Delete</button>
+                                <button class="edit" data-id="<%= posts[i].id %>">Edit Post</button>
+                            </div>
+                        </div>
+                        <div class="post" id="edit-form-<%= posts[i].id %>" style="display:none;">
+                            <form>
+                                <textarea id="title" name="title" rows="1" cols="50" required><%= posts[i].title%></textarea>
+                                <textarea id="body" name="text" rows="4" cols="50" required><%= posts[i].text %></textarea>
+                                <div class="post-flex-container">
+                                    <button type="submit" class="edit-submit" data-id="<%= posts[i].id %>">Save Changes</button>
+                                    <button type="button" class="cancel-change" data-id="<%= posts[i].id %>">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
+                    <% } %>
+            <% }} %>
+        </div>
+        <div class="side-column"></div>
+    </div>
+    
+    <script src="/js/scripts.js"></script>
+</body>
+</html>
