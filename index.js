@@ -12,9 +12,9 @@ app.use(express.static("public"));
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.json());
 
-const loadPosts = () =>{
+const loadPosts = async () =>{
     try{
-        const dataBuffer = fs.readFileSync(dataFilePath);
+        const dataBuffer = await fs.promises.readFile(dataFilePath);
         const dataJSON = dataBuffer.toString();
         return JSON.parse(dataJSON);
     }
@@ -23,11 +23,16 @@ const loadPosts = () =>{
     }
 }
 
-let postInfo = loadPosts();
+let postInfo;
+const init = async () => {
+    postInfo = await loadPosts();
+};
 
-const savePosts = (posts) =>{
+init();
+
+const savePosts = async (posts) =>{
     const dataJSON = JSON.stringify(posts);
-    fs.writeFileSync(dataFilePath, dataJSON);
+    await fs.promises.writeFile(dataFilePath, dataJSON);
 }
 
 function createPostContent(title = '', text = '', id = ''){
@@ -38,9 +43,10 @@ function createPostContent(title = '', text = '', id = ''){
     };
 }
 
-app.delete('/delete/:id', (req, res) => {
-    const id = req.params.id * 1;
+app.delete('/delete/:id', async (req, res) => {
+    const id = parseInt(req.params.id, 10); 
     const postToDelete = postInfo.find(post => post.id === id);
+
     if(!postToDelete){
         return res.status(404).json({
             status: 'fail',
@@ -51,19 +57,20 @@ app.delete('/delete/:id', (req, res) => {
     const index = postInfo.indexOf(postToDelete);
     postInfo.splice(index, 1);
 
-    fs.writeFile(dataFilePath, JSON.stringify(postInfo), (err) => {
-        if (err) {
-            return res.status(500).json({
-                status: "Error",
-                message: "Internal server error",
-            });
-        }
+    try {
+        await fs.promises.writeFile(dataFilePath, JSON.stringify(postInfo));
         res.redirect("/");
-    });
+    } catch (error) {
+
+        return res.status(500).json({
+            status: "Error",
+            message: "Internal server error",
+        });
+    }
 });
 
-app.put("/edit/:id", (req, res) => {
-    const id = req.params.id * 1;
+app.put("/edit/:id", async (req, res) => {
+    const id = parseInt(req.params.id, 10);
     const title = req.body["title"];
     const text = req.body["text"];
     console.log('Title:', title);
@@ -79,7 +86,7 @@ app.put("/edit/:id", (req, res) => {
     const index = postInfo.indexOf(postToEdit);
     postInfo[index].title = title;
     postInfo[index].text = text;
-    savePosts(postInfo);
+    await savePosts(postInfo);
 
     res.status(200).json({
         status: 'success',
@@ -88,40 +95,34 @@ app.put("/edit/:id", (req, res) => {
     });
 })
 
-app.post("/submit-form", (req, res) => {
+app.post("/submit-form", async (req, res) => {
     const postTitle = req.body["postTitle"];
     const postText = req.body["postText"];
-    let postId;
-    if(postInfo.length === 0){
-      postId = 1;
-    }
-    else{
-        postId = postInfo[postInfo.length - 1]["id"] + 1;
-    }
     console.log(postText, postTitle);
     if(postTitle === '' || postText === ''){
         console.log("Empty title or text, not adding to postInfo");
+        return res.status(400).json({
+            status: 'fail',
+            message: 'Title and text cannot be empty'
+        })
     }
 
-    else{
+    let postId = postInfo.length === 0 ? 1 : postInfo[postInfo.length - 1].id + 1;
+
     const newPost = (createPostContent(postTitle, postText, postId));
-        if(newPost.title && newPost.text){ //check if they have actual values like this and not checking the key value you dolt
+    if(newPost.text && newPost.text){
+        //try to get rid of the double submit issue
+
+        //try to change code to send post object to the front-end
+        //so it can preappend a post without have to rerender the whole page
             postInfo.push(newPost);
-            savePosts(postInfo);
-         }
-        else{
-        console.log("createNewPost added empty object. Not adding to postInfo");
-        }  
+            await savePosts(postInfo);
+            res.redirect("/");
     }
-    
-    res.redirect("/");
+ 
 });
 
-app.post("/create", (req, res) => {
-    res.render("index.ejs", {
-        posts: postInfo
-    });
-})
+
 
 app.get("/", (req, res) => {
     res.render("index.ejs", {
