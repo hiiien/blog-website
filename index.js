@@ -56,17 +56,12 @@ app.delete('/delete/:id', async (req, res) => {
 
     const index = postInfo.indexOf(postToDelete);
     postInfo.splice(index, 1);
+    await savePosts(postInfo);
 
-    try {
-        await fs.promises.writeFile(dataFilePath, JSON.stringify(postInfo));
-        res.redirect("/");
-    } catch (error) {
-
-        return res.status(500).json({
-            status: "Error",
-            message: "Internal server error",
-        });
-    }
+   res.status(200).json({
+    status: 'success',
+    message: 'Post deleted successfully',
+   });
 });
 
 app.put("/edit/:id", async (req, res) => {

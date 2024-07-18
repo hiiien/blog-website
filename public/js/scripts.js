@@ -26,13 +26,14 @@ document.querySelector('#myForm').addEventListener('submit', async (e) =>{
         } else {
             console.log('Form submission failed:', response.status, await response.text());
         }
+        reload();
     } catch (error) {
         console.log(`ERROR: ${error}`);
     }
 });
 
 
-document.querySelectorAll('.delete').forEach(button =>{
+document.querySelectorAll('.delete').forEach(button => {
     button.addEventListener('click', async (e) => {
         e.preventDefault();
         const id = e.target.dataset.id;
@@ -42,16 +43,14 @@ document.querySelectorAll('.delete').forEach(button =>{
                 headers: {
                     'content-type': 'application/json',
                 },
-            })
+            });
 
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
-            else{
-                window.location.reload();
-            }
+
         } catch (error) {
-            console.log('Error deleting:', error)
+            console.log('Error deleting:', error);
         }
     });
 });
