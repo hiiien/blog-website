@@ -30,7 +30,8 @@
             <div id="explanation">
                 <h2 class="title">How To Use.</h2>
                 <p class="text">Enter a title, blog post text, and click submit. Your post will be displayed on the interface with most recent
-                    posts at the top of the list. Share with your friends and display messages on the board for everyone to see!
+                    posts at the top of the list. Share with your friends and display messages on the board for everyone to see! ***NOTE 
+                    - The delete function only works after a manual refresh of the page. Edit functionality not properly implemented yet***
                 </p>
             </div>
         </div>
@@ -46,18 +47,22 @@
                 <% if(posts.length > 0){ %>
                     <% for(var i = posts.length - 1; i >=0; --i){ %>
                         <div class="post" id="post-content-<%= posts[i].id %>">
-                            <h2 class="title"><%= posts[i].title %></h2>
-                            <p class="text"><%= posts[i].text %></p>
+                            <h2 class="title" id="post-title-<%= posts[i].id %>"><%= posts[i].title %></h2>
+                            <p class="text" id="post-text-<%= posts[i].id %>"><%= posts[i].text %></p>
                             <div class="post-flex-container">
-                                <button class="delete" data-id="<%= posts[i].id %>">Delete</button>
+                                <form action="/delete" method="POST">
+                                    <input type="hidden" name="id" value="<%= posts[i].id %>">
+                                    <button type="submit" class="delete">Delete</button>
+                                </form>
                                 <button class="edit" data-id="<%= posts[i].id %>">Edit Post</button>
                             </div>
                         </div>
                         <div class="post" id="edit-form-<%= posts[i].id %>" style="display:none;">
-                            <form>
+                            <form class="form-edit" action="/edit" method="POST">
                                 <textarea id="title" name="title" rows="1" cols="50" required><%= posts[i].title%></textarea>
                                 <textarea id="body" name="text" rows="4" cols="50" required><%= posts[i].text %></textarea>
                                 <div class="post-flex-container">
+                                    <input type="hidden" name="id" value="<%= posts[i].id %>">
                                     <button type="submit" class="edit-submit" data-id="<%= posts[i].id %>">Save Changes</button>
                                     <button type="button" class="cancel-change" data-id="<%= posts[i].id %>">Cancel</button>
                                 </div>
